@@ -28,7 +28,7 @@ int fcs(BYTE x) {
     }
     return c;
 }
-//-------------------------//MODIFICAR
+
 void empaquetarProtocolo(Protocolo &p){
     if (p.Long > 0) {
         //3 bits CMD	+	4 bits ttl	+	1 bit long
@@ -45,11 +45,12 @@ void empaquetarProtocolo(Protocolo &p){
         p.frame[p.Long + 1] =((p.data[p.Long - 1] & 0xFC) >> 2) | ((p.fcs & 0x03) << 6);
         //agrega checksum a frame
         p.frame[p.Long + 2] = (p.fcs)>>2;
-        }else {
-	        p.frame[0] = (p.cmd & 0x07) | (p.ttl<<3);
-	        p.fcs = fcs(p.frame,1);
-	        p.frame[1] = (p.fcs & 0x03) << 6;
-	        p.frame[2] = (p.fcs>>2);
+        } 
+    else {
+        p.frame[0] = (p.cmd & 0x07) | (p.ttl<<3);
+        p.fcs = fcs(p.frame,1);
+        p.frame[1] = (p.fcs & 0x03) << 6;
+        p.frame[2] = (p.fcs>>2);
         }
 }
 bool desempaquetarProtocolo(Protocolo &p){
@@ -57,9 +58,7 @@ bool desempaquetarProtocolo(Protocolo &p){
     p.ttl = (p.frame[0] & 0x78)>>3;//4 bits ttl
     p.Long = ((p.frame[0] & 0x80)>>7) | ((p.frame[1] & 0x3F) << 1);//7 bits long
     p.fcs = fcs(p.frame, p.Long + 1) + fcs((p.frame[p.Long + 1] & 0x3F));
-
     printf("el checksum es %d\n",p.fcs);
-
     //obtención del checksum al desempaquetar
     int aux=((p.frame[p.Long + 1]>>6) | ((p.frame[p.Long + 2]) << 2));
     printf("este es el checksum %d\n",aux);
@@ -77,6 +76,7 @@ bool desempaquetarProtocolo(Protocolo &p){
     }
     return false;//si checksum es incorrecto
 }
+
 int empaquetarEthernet(Protocolo &p,Ethernet &e){
     e.Long=p.Long+3;//tamaño de data más los campos del protocolo
     for(int i=0;i<6;i++){
@@ -92,6 +92,7 @@ int empaquetarEthernet(Protocolo &p,Ethernet &e){
     e.frameEth[14+e.Long+i] = (e.fcs &(0xFF<<8*i)) >> 8*i;
 return (14+e.Long+4);//tamaños de (macs+long+frame+fcs)
 }
+
 bool desempaquetarEthernet(Protocolo &p,Ethernet &e){
     e.Long = e.frameEth[12] +(e.frameEth[13] << 8);//obtencion del largo de la data desde
     // el frame de ethernet
@@ -104,8 +105,6 @@ bool desempaquetarEthernet(Protocolo &p,Ethernet &e){
         {
         e.MACD[i]=e.frameEth[i];//mac destino
         e.MACO[i]=e.frameEth[i+6];//mac origen
-        //printf(" %x ",e.MACD[i]);fflush(stdout);
-        //printf(" %x ",e.MACO[i]);fflush(stdout);
         }
         for (int i = 0; i <e.Long; ++i)
         {
@@ -131,13 +130,11 @@ void writeSlip(int fn,Ethernet& ether){
     }
     writePort(fn,(&END),1);//Caracter de termino
 }
-void readSlip(int fn,Ethernet& ether,int timeout_msec){
-        int n,i=0;
-        BYTE c;
-        do {
-            n=readPort(fn,&c,1,timeout_msec);
-        } while(n==0 || c!=END);
 
+int readSlip(int fn,Ethernet& ether,int timeout_msec){
+        int n,i=0;
+        BYTE c="\0";
+        if(1==readPort(fn,&c,1,timeout_msec) && &c==END){
         do {
             n=readPort(fn,&c,1,timeout_msec);
             if(c==ESC) {
@@ -152,31 +149,20 @@ void readSlip(int fn,Ethernet& ether,int timeout_msec){
                 i++;
             }
         }while(c!=END);
+        }
+        return i;//devuelve la cantidad de BYTES del frameEth
 }
-void enviar(BYTE *frame, int largo,int destino, int origen){
-/*
-    Protocolo paquete;
-    Ethernet ethernet;
 
-    getMac(ethernet.MACD,destino);
-    getMac(ethernet.MACO,origen);
-
-    paquete.cmd=3;
-    paquete.Long=largo;
-
+void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p){
     for(int i=0;i<largo;i++)
-        paquete.data[i]=frame[i];
-    empaquetarProtocolo(paquete);
-    int size=empaquetarEthernet(paquete,ethernet);
-    empaquetarSlip(Ethernet);
-    //writePort(,size);
-    */
-    return 0;
+        paquete.data[i]=mensaje[i];
+    empaquetarProtocolo(p);
+    empaquetarEthernet(p,e);
+    writeSlip(fn,e);
 }
-int recibe(BYTE * mensaje,int timeout_msec,int origen){
-  	/*Ethernet e;
-    Protocolo p;
-    int size=readPort(e.ethernet,timeout_msec);
+
+int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p){
+    int size=readSlip(fn,e.ethernet,timeout_msec);
     if (size>0){
     if (desempaquetarEthernet(p,e)){//Revision del FCS(Ethernet)
         if(checkMac(e.MACD,origen)){//Verificar correspondencia de MAC
@@ -190,8 +176,7 @@ int recibe(BYTE * mensaje,int timeout_msec,int origen){
             }
         }
         else{
-            writePort(e.ethernet,14+e.Long+4);
-            return -2;//el nodo no es el destinatario por lo tanto se reenvia el paquete
+            return 1;//el nodo no es el destinatario por lo tanto se reenvia el paquete
             }  
     }
     else{
@@ -200,9 +185,9 @@ int recibe(BYTE * mensaje,int timeout_msec,int origen){
     }
     else{
         return 0;//timeout
-    }*/
-    return 0;
+    }
 }
+
 void getMac(BYTE* mac, int n){
     char macAux[18];
     FILE * arch = fopen("macs.txt","r");
