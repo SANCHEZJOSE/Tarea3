@@ -12,8 +12,8 @@ void readSlip(int,Ethernet& ,int);
 int fcs(BYTE *x, int n);
 int fcs (BYTE x);
 
-void enviar(BYTE *frame, int largo,int destino, int origen);
-int recibe(BYTE * mensaje,int timeout_msec,int origen);
+void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p);
+int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p);
 void getMac(BYTE* mac, int n);
 bool checkMac(BYTE *mac,int nodo);
 //Tratamiento de matrices
