@@ -14,7 +14,7 @@ int fcs (BYTE x);
 
 void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p);
 int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p);
-void getMac(BYTE* mac, int n);
+void getMacUsr(BYTE* mac,char *Nusr);
 bool checkMac(BYTE *mac,int nodo);
 //Tratamiento de matrices
 int existeMac( int m[][],int m2[],int N );
