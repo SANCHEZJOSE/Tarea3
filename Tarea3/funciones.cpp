@@ -132,13 +132,13 @@ void writeSlip(int fn,Ethernet& ether){
 }
 
 int readSlip(int fn,Ethernet& ether,int timeout_msec){
-        int n,i=0;
-        BYTE c="\0";
-        if(1==readPort(fn,&c,1,timeout_msec) && &c==END){
+        int i=0;
+        BYTE c;
+        if(1==readPort(fn,&c,1,timeout_msec) && c==END){
         do {
-            n=readPort(fn,&c,1,timeout_msec);
+            readPort(fn,&c,1,timeout_msec);
             if(c==ESC) {
-                n=readPort(fn,&c,1,timeout_msec);
+                readPort(fn,&c,1,timeout_msec);
                 if(c==DC)
                     ether.frameEth[i]=END;
                 if(c==DD)
@@ -188,14 +188,15 @@ int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p){
     }
 }
 
-void getMac(BYTE* mac, int n){
+void getMacUsr(BYTE* mac,char *Nusr){
     char macAux[18];
-    FILE * arch = fopen("macs.txt","r");
-    fseek(arch, 23*n,SEEK_SET); //58-23
-    fseek(arch,5,SEEK_CUR); //38-5
+    char dir[50];
+    strcpy(dir,Nusr);
+    strcat(dir,"/mac.txt");
+    FILE * arch = fopen(dir,"r");
+    fseek(arch,0,SEEK_SET);
     fscanf(arch,"%s",macAux);
-    //printf("%s\n",macAux);
-    //fflush(stdout);
+    printf("%s\n",macAux);
     for(int i=0;i<6;i++){//ya que son 6 BYTE
         for(int j=0;j<2;j++){//ya que son dos cuaternas
             char aux=macAux[i*3+j];
@@ -210,6 +211,7 @@ void getMac(BYTE* mac, int n){
                 mac[i] = cuaterna<<4;
             if(j==1)
                 mac[i]=mac[i] | cuaterna;
+            printf("%x\n",mac[i]);
         }
     }
 }
