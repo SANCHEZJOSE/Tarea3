@@ -17,8 +17,8 @@ int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p);
 void getMacUsr(BYTE* mac,char *Nusr);
 bool checkMac(BYTE *mac,int nodo);
 //Tratamiento de matrices
-int existeMac( int m[][],int m2[],int N );
-void agregarMac(int m[8][6], int m2[6], int pos);
-void agregarNombre(char nombres[nodos][10],char newName[10],int pos);
-void ActualizarTtl(int ttl[nodos][3],int newTtl,int nodo,int puerto);
+int existeMac( int* m,int* m2,int N );
+void agregarMac(int* m, int* m2, int pos);
+void agregarNombre(char* nombres,char* newName,int pos);
+void ActualizarTtl(int* ttl,int newTtl,int nodo,int puerto);
 #endif

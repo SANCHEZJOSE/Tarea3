@@ -221,7 +221,7 @@ bool checkMac(BYTE *mac,int nodo){
     return strncmp((char *)mac,(char *)aux,6)==0;//true si la mac es del nodo
     //false si no corresponde.   
 }
-int existeMac( unsigned char mac[][] ,unsigned char m2[],int N ){//pasar de in a byte
+int existeMac( unsigned char* mac,unsigned char* m2,int N ){//pasar de in a byte
 	bool aux=true;
 	for(int i=0;i<N;i++){//cantidad de mac
 		aux=true;
@@ -233,19 +233,19 @@ int existeMac( unsigned char mac[][] ,unsigned char m2[],int N ){//pasar de in a
 	}
 	return -1;
 }
-void agregarMac(unsigned char m[nodos][6], unsigned char m2[6], int pos){
-	if(existeMac(m[nodos][6],m2[6],pos)==1){
+void agregarMac(unsigned char* m, unsigned char* m2, int pos){
+	if(existeMac(m[8][6],m2[6],pos)==1){
 		for(int i=0;i<6;i++)
 			m[pos+1][i]=m2[i];
 	}else{
 		printf("La Mac ya Existe\n");
 	}
 }
-void agregarNombre(char nombres[nodos][10],char newName[10],int pos){
+void agregarNombre(char* nombres,char* newName,int pos){
 	for(int =0;i<10,i++)
 		nombres[pos+1]=newName[i];
 }
-void ActualizarTtl(int ttl[nodos][3],int newTtl,int nodo,int puerto){
+void ActualizarTtl(int *ttl,int newTtl,int nodo,int puerto){
 	ttl[nodo][puerto]=newTtl;
 }
 
