@@ -8,8 +8,9 @@
 
 BYTE END = 0xC0;// 192
 BYTE ESC = 0xDB;// 219
-BYTE DC = 0xDC;// 220
-BYTE DD = 0xDD;// 221
+BYTE DC  = 0xDC;// 220
+BYTE DD  = 0xDD;// 221
+ 
 
 int fcs(BYTE *x, int n){
     int c=0;
@@ -155,14 +156,14 @@ int readSlip(int fn,Ethernet& ether,int timeout_msec){
 
 void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p){
     for(int i=0;i<largo;i++)
-        paquete.data[i]=mensaje[i];
+        p.data[i]=mensaje[i];
     empaquetarProtocolo(p);
     empaquetarEthernet(p,e);
     writeSlip(fn,e);
 }
-
+/*
 int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p){
-    int size=readSlip(fn,e.ethernet,timeout_msec);
+    int size=readSlip(fn,e,timeout_msec);
     if (size>0){
     if (desempaquetarEthernet(p,e)){//Revision del FCS(Ethernet)
         if(checkMac(e.MACD,origen)){//Verificar correspondencia de MAC
@@ -187,7 +188,7 @@ int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p){
         return 0;//timeout
     }
 }
-
+*/
 void getMacUsr(BYTE* mac,char *Nusr){
     char macAux[18];
     char dir[50];
@@ -215,13 +216,10 @@ void getMacUsr(BYTE* mac,char *Nusr){
         }
     }
 }
-bool checkMac(BYTE *mac,int nodo){
-    BYTE aux[6];
-    getMac(aux,nodo);//mac del nodo
-    return strncmp((char *)mac,(char *)aux,6)==0;//true si la mac es del nodo
-    //false si no corresponde.   
-}
-int existeMac( unsigned char* mac,unsigned char* m2,int N ){//pasar de in a byte
+
+
+//PROBLEMAS CON PUNTEROS ARREGLAR
+int existeMac( unsigned char mac[][6] ,unsigned char m2[],int N ){//pasar de in a byte
 	bool aux=true;
 	for(int i=0;i<N;i++){//cantidad de mac
 		aux=true;
@@ -233,33 +231,19 @@ int existeMac( unsigned char* mac,unsigned char* m2,int N ){//pasar de in a byte
 	}
 	return -1;
 }
-void agregarMac(unsigned char* m, unsigned char* m2, int pos){
-	if(existeMac(m[8][6],m2[6],pos)==1){
+unsigned char agregarMac(unsigned char m[][6], unsigned char m2[], int pos){
+	if( existeMac( m , m2, pos ) == -1 ){
 		for(int i=0;i<6;i++)
 			m[pos+1][i]=m2[i];
 	}else{
 		printf("La Mac ya Existe\n");
 	}
+    return m;
 }
 void agregarNombre(char* nombres,char* newName,int pos){
-	for(int =0;i<10,i++)
+	for( int i = 0 ; i < 10 ; i++ )
 		nombres[pos+1]=newName[i];
 }
-void ActualizarTtl(int *ttl,int newTtl,int nodo,int puerto){
-	ttl[nodo][puerto]=newTtl;
+int ActualizarTtl(int ttl[][4],int newTtl,int nodo,int puerto){
+	return ttl[nodo][puerto]=newTtl;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

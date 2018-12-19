@@ -8,17 +8,18 @@ bool desempaquetarProtocolo(Protocolo &);
 int empaquetarEthernet(Protocolo &,Ethernet &);
 bool desempaquetarEthernet(Protocolo &,Ethernet &);
 void writeSlip(int,Ethernet& );
-void readSlip(int,Ethernet& ,int);
+int readSlip(int,Ethernet& ,int);
 int fcs(BYTE *x, int n);
 int fcs (BYTE x);
 
 void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p);
 int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p);
 void getMacUsr(BYTE* mac,char *Nusr);
-bool checkMac(BYTE *mac,int nodo);
+
+
 //Tratamiento de matrices
-int existeMac( int* m,int* m2,int N );
-void agregarMac(int* m, int* m2, int pos);
+int existeMac( unsigned char mac[][6],unsigned char m2[],int N );
+unsigned char agregarMac(unsigned char m[][6], unsigned char m2[], int pos);
 void agregarNombre(char* nombres,char* newName,int pos);
-void ActualizarTtl(int* ttl,int newTtl,int nodo,int puerto);
+int ActualizarTtl(int* ttl[][4],int newTtl,int nodo,int puerto);
 #endif

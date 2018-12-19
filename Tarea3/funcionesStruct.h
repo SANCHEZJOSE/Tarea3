@@ -24,7 +24,10 @@ struct Matrices{
 	int mac[nodos][6];//mac de cada nodos
 	char nombres[nodos][10];//nombre de los nodos
 	Matrices(){
-		for(int i=0;i<nodos;i++){for(int j=0;j<4;j++){ttl[i][j]=-1;}}
+		for(int i=0;i<nodos;i++){
+			for(int j=0;j<4;j++)
+				ttl[i][j]=-1;
+		}
 	}
 };
 #endif
