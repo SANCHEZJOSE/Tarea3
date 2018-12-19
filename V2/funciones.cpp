@@ -262,10 +262,15 @@ int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuari
     BYTE MAC[6]={0,0,0,0,0,0};
     return existeMac(info,MAC);
 }
-void agregarNombre(int n,char *nombre,Matrices & info){}
-void actualizarTTL(int n,int puerto,int TTL,Matrices & info){}
-void agregarmac(int n,BYTE *macOrigen,Matrices & info){}
-
+void agregarNombre(int n,char *nombre,Matrices & info){
+ strcpy(info.nombres[n],nombre);   
+}
+void actualizarTTL(int n,int puerto,int TTL,Matrices & info){
+    info.ttl[n][puerto]=TTL;
+}
+void agregarmac(int n,BYTE *macOrigen,Matrices & info){
+ strcpy((char *)info.mac[n],(char*)macOrigen);  
+}
 
 
 
