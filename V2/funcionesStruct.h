@@ -1,15 +1,15 @@
 #ifndef FUNCIONES_STRUCT_H
 #define FUNCIONES_STRUCT_H
-#define tam 126
-#define nodos 9
+#define TAM 126
+#define NODOS 9
 
 struct Protocolo{
 	int cmd;//3 bits --> 7 comandos
 	int Long;//7 bits --> 127 bits maximo
 	int ttl;//4 bits -->max 15 nodos
-	unsigned char data[tam];//126 --> 126 caracteres maximo
+	unsigned char data[TAM];//126 --> 126 caracteres maximo
 	int fcs;//10 bits -->1023 bits
-	unsigned char frame[tam+3];//130
+	unsigned char frame[TAM+3];//130
 };
 struct Ethernet{
 	unsigned char MACD[6];
@@ -20,11 +20,14 @@ struct Ethernet{
 	unsigned char frameEth[148];
 };
 struct Matrices{
-	int ttl[nodos][4];//ttl de cada nodo
-	unsigned char mac[nodos][6];//mac de cada nodos
-	char nombres[nodos][10];//nombre de los nodos
+	int ttl[NODOS][4];//ttl de cada nodo
+	unsigned char mac[NODOS][6];//mac de cada nodos
+	char nombres[NODOS][10];//nombre de los nodos
+	int contBroadcast[NODOS];//Permite almacenar la cantidad de veces 
+	//que llega un broadcast en cierta cantidad de procesos automaticos.
+	int flag;//permite obtener posicion del ultimo nodo agregado
 	Matrices(){
-		for(int i=0;i<nodos;i++){
+		for(int i=0;i<NODOS;i++){
 			for(int j=0;j<4;j++){
 				ttl[i][j]=-1;
 			}
@@ -34,6 +37,8 @@ struct Matrices{
 			for(int z=0;z<10;z++){
 				nombres[i][z]='\0';
 			}
+			contBroadcast[i]=0;
+		flag=0;
 		}
 	}
 };

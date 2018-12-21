@@ -11,6 +11,7 @@ BYTE ESC = 0xDB;// 219
 BYTE DC = 0xDC;// 220
 BYTE DD = 0xDD;// 221
 
+
 int fcs(BYTE *x, int n){
     int c=0;
     for(int j=0;j<n;j++)
@@ -161,13 +162,12 @@ void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p){
     writeSlip(fn,e);
 }
 
-int recibe(int fn,BYTE * mensaje,int timeout_msec,Ethernet &e,Protocolo &p){
-    BYTE * macusr=e.MACO;
+int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethernet &e,Protocolo &p){
     BYTE macBroad[]={0xFF,0XFF,0XFF,0XFF,0XFF,0XFF};
     int size=readSlip(fn,e,timeout_msec);
     if (size>0){
     if (desempaquetarEthernet(p,e)){//Revision del FCS(Ethernet)
-        if(checkMac(e.MACD,macusr)){//Verificar correspondencia de MAC
+        if(checkMac(e.MACD,macNodo)){//Verificar correspondencia de MAC
             if(desempaquetarProtocolo(p)){//Revision del FCS(Protocolo)
                 int n=p.Long;
                 strcpy ( (char *)mensaje,(char *)p.data);//el mensaje es para el nodo
@@ -228,7 +228,7 @@ bool checkMac(BYTE *mac,BYTE *macusr){
 }
 int existeMac( Matrices & info,BYTE *mac){//verifica en que espacio exite la MAC
 	for(int i=0;i<9;i++){
-    if(checkMac(info.mac[i],mac))//busca la coincidencia de una MAC
+    if(checkMac(info.mac[i],mac))//Busca la coincidencia de una MAC
         return i;
 	}
 	return -1;
@@ -240,23 +240,34 @@ char * NombreDeMac(Matrices & info,BYTE * MAC){// Retorna el nombre de usuario s
     else
         return (char *)"Desconocido..";
 }
-void limpiarTTL(Matrices & info){//elimina los TTL's existentes para agregar nuevos
-        for(int i=0;i<9;i++){
+void limpiarTTLs(Matrices & info){//elimina los TTL's existentes para agregar nuevos
+        for(int i=0;i<NODOS;i++){
             for(int j=0;j<4;j++){
                 info.ttl[i][j]=-1;
             }
         }
     }
-void gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nombre){
+void limpiarTTL(int nodo,Matrices & info){//elimina los TTL's existentes de un nodo
+            for(int j=0;j<4;j++){
+                info.ttl[nodo][j]=-1;
+            }
+}
+int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nombre){
+    /*Esta funcion se encarga de agregar información de un nodo a las matrices
+    devuelve el numero del nodo que ha gestionado.*/
     int aux=existeMac(info,macOrigen);
-    int n;
-    if (aux != ( -1 ) ){
-        n=buscarEspacioNodo(info);
-        agregarmac(n,macOrigen,info);
-        agregarNombre(n,nombre,info);
-        actualizarTTL(n,puerto,TTL,info);
+    if (aux == -1){
+        //n=buscarEspacioNodo(info);
+        agregarMac(info.flag,macOrigen,info);
+        agregarNombre(info.flag,nombre,info);
+        actualizarTTL(info.flag,puerto,TTL,info);
+        info.flag++;
+        return info.flag;
     }
-    //else cambiar solo el ttl.
+    else{
+        actualizarTTL(aux,puerto,TTL,info);
+        return aux; 
+    }
 }   
 int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuario
     BYTE MAC[6]={0,0,0,0,0,0};
@@ -268,9 +279,10 @@ void agregarNombre(int n,char *nombre,Matrices & info){
 void actualizarTTL(int n,int puerto,int TTL,Matrices & info){
     info.ttl[n][puerto]=TTL;
 }
-void agregarmac(int n,BYTE *macOrigen,Matrices & info){
+void agregarMac(int n,BYTE *macOrigen,Matrices & info){
  strcpy((char *)info.mac[n],(char*)macOrigen);  
 }
+
 
 
 
