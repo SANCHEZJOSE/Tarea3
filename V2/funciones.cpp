@@ -20,26 +20,23 @@ int fcs(BYTE *x, int n){
     return c;
 }
 
-int fcs(BYTE x) {
+int fcs(BYTE x){
     int c = 0;
-    for (int i = 0 ; i < 8 ; i++) {
-        if ( (x >> i) & 0x01 ) {
+    for (int i = 0 ; i < 8 ; i++){
+        if ( (x >> i) & 0x01 )
             c++;
-        }
     }
     return c;
 }
-
 void empaquetarProtocolo(Protocolo &p){
     if (p.Long > 0) {
         //3 bits CMD	+	4 bits ttl	+	1 bit long
         p.frame[0] = (p.cmd & 0x07) | ((p.ttl&0x0F)<<3) | ((p.Long &0x01)<<7);
         //6 bits Long	+	2 bits Data
         p.frame[1] = ((p.Long&0XFE)>>1 | ((p.data[0] & 0x03) << 6));
-        for ( int i = 0 ; i < p.Long - 1; i++ ) {
+        for ( int i = 0 ; i < p.Long - 1; i++ ) 
             //6 bits        +       2 bits
             p.frame[2 + i] = ((p.data[i] & 0xFC) >> 2) | ((p.data[i + 1] & 0x03) << 6);
-        }   
         p.frame[p.Long + 1] = ((p.data[p.Long - 1] & 0xFC) >> 2);
         p.fcs = fcs(p.frame,p.Long + 2);
         //calcular checksum
@@ -69,9 +66,8 @@ bool desempaquetarProtocolo(Protocolo &p){
         if (p.Long > 0){
             p.data[0] = (p.frame[1] >> 6) | ((p.frame[2] & 0x3F) << 2);
             //obtención de la data desde el frame
-            for (int i = 0 ; i < p.Long; i++) {
+            for (int i = 0 ; i < p.Long; i++)
                 p.data[i + 1] = (p.frame[i + 2] >> 6) | ((p.frame[i + 3] & 0x3F) << 2);
-            }
         }
     return true; //si checksum es correcto
     }
@@ -86,11 +82,11 @@ int empaquetarEthernet(Protocolo &p,Ethernet &e){
     }
     e.frameEth[12] = e.Long & 0xFF;
     e.frameEth[13] = (e.Long & 0xFF00)>>8;
-      for(int i=0;i<e.Long;i++)
-        e.frameEth[14+i]=p.frame[i];
+        for(int i=0;i<e.Long;i++)
+            e.frameEth[14+i]=p.frame[i];
     e.fcs = fcs(e.frameEth,14+e.Long);//tamaños de (macs+long+frame)
-     for(int i=0;i<4;i++)
-    e.frameEth[14+e.Long+i] = (e.fcs &(0xFF<<8*i)) >> 8*i;
+        for(int i=0;i<4;i++)
+            e.frameEth[14+e.Long+i] = (e.fcs &(0xFF<<8*i)) >> 8*i;
 return (14+e.Long+4);//tamaños de (macs+long+frame+fcs)
 }
 
@@ -102,15 +98,12 @@ bool desempaquetarEthernet(Protocolo &p,Ethernet &e){
     for(int i=0;i<4;i++)
         e.fcs = e.fcs + (e.frameEth[14+e.Long+i] << (8*i));//desempaquetado de fcs ethernet
     if(FCS == e.fcs){//detección de error por checksum
-        for (int i = 0; i <6; ++i)
-        {
-        e.MACD[i]=e.frameEth[i];//mac destino
-        e.MACO[i]=e.frameEth[i+6];//mac origen
+        for (int i = 0; i <6; ++i){
+            e.MACD[i]=e.frameEth[i];//mac destino
+            e.MACO[i]=e.frameEth[i+6];//mac origen
         }
         for (int i = 0; i <e.Long; ++i)
-        {
             p.frame[i]=e.frameEth[14+i];
-        }
         return true;//Comprobación de error FCS correcta (en Ethernet)
     }else{
         return false;//Comprobación de error FCS invalida (en Ethernet)
@@ -242,15 +235,13 @@ char * NombreDeMac(Matrices & info,BYTE * MAC){// Retorna el nombre de usuario s
 }
 void limpiarTTLs(Matrices & info){//elimina los TTL's existentes para agregar nuevos
         for(int i=0;i<NODOS;i++){
-            for(int j=0;j<4;j++){
+            for(int j=0;j<4;j++)
                 info.ttl[i][j]=-1;
-            }
         }
     }
 void limpiarTTL(int nodo,Matrices & info){//elimina los TTL's existentes de un nodo
-            for(int j=0;j<4;j++){
-                info.ttl[nodo][j]=-1;
-            }
+    for(int j=0;j<4;j++)
+            info.ttl[nodo][j]=-1;
 }
 int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nombre){
     /*Esta funcion se encarga de agregar información de un nodo a las matrices
