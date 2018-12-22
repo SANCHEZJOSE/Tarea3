@@ -56,10 +56,6 @@ bool desempaquetarProtocolo(Protocolo &p){
     p.ttl = (p.frame[0] & 0x78)>>3;//4 bits ttl
     p.Long = ((p.frame[0] & 0x80)>>7) | ((p.frame[1] & 0x3F) << 1);//7 bits long
     p.fcs = fcs(p.frame, p.Long + 1) + fcs((p.frame[p.Long + 1] & 0x3F));
-    printf("el checksum es %d\n",p.fcs);
-    //obtención del checksum al desempaquetar
-    int aux=((p.frame[p.Long + 1]>>6) | ((p.frame[p.Long + 2]) << 2));
-    printf("este es el checksum %d\n",aux);
     if ( p.fcs ==(int)((p.frame[p.Long + 1] >>6) | ((p.frame[p.Long + 2]) <<2))) {
         printf("entre\n");
         //checksum obtenido vs checksum desempaquetado
@@ -233,18 +229,20 @@ char * NombreDeMac(Matrices & info,BYTE * MAC){// Retorna el nombre de usuario s
     else
         return (char *)"Desconocido..";
 }
-void limpiarTTLs(Matrices & info){//elimina los TTL's existentes para agregar nuevos
+void limpiarTTLs(Matrices & info){/*elimina los TTL's existentes de todos 
+los nodos para agregar nuevos*/
         for(int i=0;i<NODOS;i++){
             for(int j=0;j<4;j++)
                 info.ttl[i][j]=-1;
         }
-    }
+}
+
 void limpiarTTL(int nodo,Matrices & info){//elimina los TTL's existentes de un nodo
     for(int j=0;j<4;j++)
             info.ttl[nodo][j]=-1;
 }
 int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nombre){
-    /*Esta funcion se encarga de agregar información de un nodo a las matrices
+    /*Esta función se encarga de agregar información de un nodo a las matrices
     devuelve el numero del nodo que ha gestionado.*/
     int aux=existeMac(info,macOrigen);
     if (aux == -1){
@@ -264,16 +262,31 @@ int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuari
     BYTE MAC[6]={0,0,0,0,0,0};
     return existeMac(info,MAC);
 }
-void agregarNombre(int n,char *nombre,Matrices & info){
- strcpy(info.nombres[n],nombre);   
+void agregarNombre(int nodo,char *nombre,Matrices & info){
+ strcpy(info.nombres[nodo],nombre);   
 }
-void actualizarTTL(int n,int puerto,int TTL,Matrices & info){
-    info.ttl[n][puerto]=TTL;
+void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info){
+    info.ttl[nodo][puerto]=TTL;
 }
-void agregarMac(int n,BYTE *macOrigen,Matrices & info){
- strcpy((char *)info.mac[n],(char*)macOrigen);  
+void agregarMac(int nodo,BYTE *macOrigen,Matrices & info){
+ strcpy((char *)info.mac[nodo],(char*)macOrigen);  
 }
-
+int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
+    /* Esta función devuelve el puerto con mayor TTL en caso de 
+    que el nodo de destino de desconecte esta función devolvera -1*/
+    int aux=-1;
+    int puerto=-1;
+    if (nodo != -1)
+    for (int i = 0; i < cantPuertos; ++i)
+    {
+        if ( info.ttl[nodo][i] > aux )
+        {
+            aux=info.ttl[nodo][i]; 
+            puerto=i;
+        }
+    }
+    return puerto;
+}
 
 
 
