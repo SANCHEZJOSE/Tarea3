@@ -21,6 +21,9 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 
 int main(int argc, char* argv[]){
 	Matrices InfoRed;
+	procesoUsr(InfoRed);
+
+	/*
 	strcpy((char *)eBroad.MACO,(char *)macNodo);
 	strcpy((char *)eBroad.MACD,(char *)macBROAD);
 	pBroad.cmd=1;
@@ -38,30 +41,37 @@ int main(int argc, char* argv[]){
 		fn[i] = openPort(namePort,B38400);
 	}
 	int in=fileno(stdin);
+	*/
 	return 0;
 }
+
+
+//---------------------------------------------------------------//
 void procesoUsr(Matrices matriz){
 	int opcion=0;
-		char mensaje[10]="";
-		printf("RaspiRed :\n");
-		printf("A quien Desea Enviar un Mensaje?:\n");
-		for (int i=0;i<8;i++){
-			printf("%d.-\t",i+1);
-			for (int j = 0; j <10; ++j){
-				printf("%c",matriz.nombres[i][j]);
-			}
-			printf("\n");
+	BYTE mensaje[10]="";
+
+	printf("RaspiRed :\n");
+	printf("A quien Desea Enviar un Mensaje?:\n");
+	for (int i=0;i<8;i++){
+		printf("%d.-\t",i+1);
+		for (int j = 0; j <10; ++j){
+			printf("%c",matriz.nombres[i][j]);
 		}
-		printf("Ingrese Opcion:\t");
-		opcion=fileno(stdin);
-		printf("%d\n",fileno);
-		fflush(stdin);
-		printf("Ingrese Mensaje: \n");
-		fflush(stdin);
-		scanf("%c",&mensaje);
-		fflush(stdin);
-		//Ingresara Mensaje
+		printf("\n");
+	}
+	printf( "Ingrese Opcion:\t");
+	scanf("%d",&opcion);
+	fflush(stdin);
+
+	printf("Ingrese Mensaje: ");
+	scanf("%u",&mensaje);
+	fflush(stdin);
+
+	//Ingresara Mensaje
 }
+//---------------------------------------------------------------//
+
 
 void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo){
 	int tamMensaje=0;
