@@ -288,10 +288,12 @@ int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     return puerto;
 }
 bool EstadoNodo(int nodo, Matrices & info){
-    if(info.ttl[nodo][1]==-1){
-        if(info.ttl[nodo][2]==-1){
-            if(info.ttl[nodo][3]==-1)
-                return false;
+    if(info.ttl[nodo][0]==-1){
+        if(info.ttl[nodo][1]==-1){
+            if(info.ttl[nodo][2]==-1){
+                if(info.ttl[nodo][3]==-1)
+                    return false;
+            }
         }
     }
     return true;

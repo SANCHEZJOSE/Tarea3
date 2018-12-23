@@ -92,7 +92,7 @@ void procesoUsr(Matrices& matriz){
 	strcpy( (char*)paquete.data , (char*)mensaje );
 	strcpy( (char*)ethernet.MACD , (char*)matriz.mac[opcion] );
 	strcpy( (char*)ethernet.MACO , (char*)matriz.mac[0] );//mac origen sientes esta en la primera posicion de la matriz
-
+	enviar( fn[opcion] ,mensaje ,strlen( (char*)mensaje ) , ethernet , paquete );
 
 
 }
