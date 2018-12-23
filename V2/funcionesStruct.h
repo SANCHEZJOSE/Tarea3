@@ -35,7 +35,7 @@ struct Matrices{
 				mac[i][x]=0;
 			}
 			for(int z=0;z<10;z++){
-				nombres[i][z]='a';
+				nombres[i][z]='\0';
 			}
 			contBroadcast[i]=0;
 		flag=0;
