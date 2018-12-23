@@ -60,7 +60,6 @@ bool desempaquetarProtocolo(Protocolo &p){
     p.Long = ((p.frame[0] & 0x80)>>7) | ((p.frame[1] & 0x3F) << 1);//7 bits long
     p.fcs = fcs(p.frame, p.Long + 1) + fcs((p.frame[p.Long + 1] & 0x3F));
     if ( p.fcs ==(int)((p.frame[p.Long + 1] >>6) | ((p.frame[p.Long + 2]) <<2))) {
-        printf("entre\n");
         //checksum obtenido vs checksum desempaquetado
         if (p.Long > 0){
             p.data[0] = (p.frame[1] >> 6) | ((p.frame[2] & 0x3F) << 2);
@@ -126,12 +125,14 @@ void writeSlip(int fn,Ethernet& ether){
                 writePort(fn,&ether.frameEth[i],1);
     }
     writePort(fn,(&END),1);//Caracter de termino
+
 }
 
 int readSlip(int fn,Ethernet& ether,int timeout_msec){
-        int i=0;
+        int i=0, n;
         BYTE c;
-        if(1==readPort(fn,&c,1,timeout_msec) && c==END){
+        n=readPort(fn,&c,1,timeout_msec);
+        if((0!=n) || (c==END)){
         do {
             readPort(fn,&c,1,timeout_msec);
             if(c==ESC) {
@@ -200,7 +201,7 @@ void getMacUsr(BYTE* mac,char *Nusr){//obtiene la MAC del nodo
     FILE * arch = fopen(dir,"r");//busca en la carpeta con el mismo nombre del nodo
     fseek(arch,0,SEEK_SET);
     fscanf(arch,"%s",macAux);
-    printf("%s\n",macAux);
+    printf("La mac de usuario es :%s\n",macAux);
     for(int i=0;i<6;i++){//ya que son 6 BYTE
         for(int j=0;j<2;j++){//ya que son dos cuaternas
             char aux=macAux[i*3+j];
@@ -215,7 +216,6 @@ void getMacUsr(BYTE* mac,char *Nusr){//obtiene la MAC del nodo
                 mac[i] = cuaterna<<4;
             if(j==1)
                 mac[i]=mac[i] | cuaterna;
-            printf("%x\n",mac[i]);
         }
     }
 }

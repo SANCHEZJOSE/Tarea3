@@ -45,7 +45,7 @@ redStart:
 	./raspiRed Raspberry ./tmp/p30 ./tmp/p33 > /dev/null &
 	./raspiRed Camila ./tmp/p40 ./tmp/p37 > /dev/null &
 	./raspiRed Jose ./tmp/p32 ./tmp/p35 ./tmp/p38 > /dev/null &
-	./raspiRed Nico ./tmp/p36 ./tmp/p34 > /dev/null &
+	./raspiRed Nico ./tmp/p36 ./tmp/p34 
 	
 redStop:
 	pkill -f raspiRed
