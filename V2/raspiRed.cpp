@@ -11,7 +11,7 @@ BYTE macNodo[6];
 BYTE macBROAD[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 Ethernet eBroad;
 Protocolo pBroad;
-
+int nodos=15;
 int contProcesosAuto=0,reinicio=7;/*Contador de procesos automaticos 
 y número máximo para reiniciar contadores de Broadcast*/
 int ttl=5;
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
 
 
 //---------------------------------------------------------------//
-void procesoUsr(int *fn,int numPorts, Matrices& matriz){
+void procesoUsr(int *fn,int *in,int numPorts, Matrices& matriz){
 	
 	Protocolo paquete;
 	Ethernet ethernet;
@@ -56,7 +56,7 @@ void procesoUsr(int *fn,int numPorts, Matrices& matriz){
 	printf("A quien Desea Enviar un Mensaje?:\n");
 	//Imprime lista de nombres
 	int c=1;
-	for (int i=0;i<8;i++){
+	for (int i=0;i<nodos;i++){
 		if( EstadoNodo(i,matriz) ){
 			printf("%d.-\t",i+1);
 			for (int j = 0; j < 10 ; j ++ )
