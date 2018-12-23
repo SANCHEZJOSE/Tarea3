@@ -29,6 +29,7 @@ void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info);
 char * NombreDeMac(Matrices & info,BYTE * MAC);
 void limpiarTTL(int nodo,Matrices & info);
 void limpiarTTLs(Matrices & info);
+bool EstadoNodo(int nodo, Matrices & info);
 // Ruteo
 int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info);
 #endif

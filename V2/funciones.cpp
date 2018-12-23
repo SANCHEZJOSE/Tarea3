@@ -287,16 +287,20 @@ int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     }
     return puerto;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
+bool EstadoNodo(int nodo, Matrices & info){
+    if(info.ttl[nodo][1]==-1){
+        if(info.ttl[nodo][2]==-1){
+            if(info.ttl[nodo][3]==-1)
+                return false;
+        }
+    }
+    return true;
+}
+/*
+BYTE NodosActivos(Matrices& info){
+    int c=0;
+    for (int i = 0; i < 8; i++)
+        c+=EstadoNodo(i,info);
+    return 
+}
+*/
