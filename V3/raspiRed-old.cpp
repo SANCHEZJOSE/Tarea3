@@ -38,25 +38,6 @@ int main(int argc, char* argv[]){
 	while(true){
 	procesoUsr(fn,numPort,InfoRed);
 	procesoAut(fn,numPort,InfoRed,argv[1],macNodo);
-for (int i = 0; i < 15; ++i){
-		for (int j = 0; j <4; j++)
-			printf("|\t%d\t|",InfoRed.ttl[i][j]);
-		printf("\n");
-	}
-	printf("\n");
-	for (int i = 0; i <15 ; ++i){
-		for (int j = 0; j < 6 ; j++)
-			printf("|\t%x\t|",InfoRed.mac[i][j]);
-		printf("\n");
-	}
-	printf("\n");
-	for (int i = 0; i <15 ; ++i){
-		printf("|");
-		for (int j = 0; j < 10 ; j++)
-			printf("%c",InfoRed.nombres[i][j]);
-		printf("|");
-		printf("\n");
-	}
 	}
 	return 0;
 }
@@ -199,27 +180,28 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 		break;
 		case -3:{//Es broadcast
 		paux.data[paux.Long]='\0';
-		// 	printf("|%d|%d|%d|%s|puerto|%d|\t Ether|",paux.cmd,paux.ttl,paux.Long,(char*)paux.data,i);
-		// 	for (int impmac = 0; impmac < 6; ++impmac)
-		// {
-		// 	printf("%x",eaux.MACD[impmac]);
+			printf("|%d|%d|%d|%s|puerto|%d|\t Ether|",paux.cmd,paux.ttl,paux.Long,(char*)paux.data,i);
+			for (int impmac = 0; impmac < 6; ++impmac)
+		{
+			printf("%x",eaux.MACD[impmac]);
 			
-		// }
-		// printf("|");
-		// 	for (int impmac = 0; impmac < 6; ++impmac)
-		// {
-		// 	printf("%x",eaux.MACO[impmac]);
+		}
+		printf("|");
+			for (int impmac = 0; impmac < 6; ++impmac)
+		{
+			printf("%x",eaux.MACO[impmac]);
 			
-		// }
-		// printf("|\n");
+		}
+		printf("|\n");
 		fflush(stdout);
 		paux.ttl--;//Se disminuye el ttl en 1
 		//se vuelve a empaquetar para actualizar TTL
 		
 		empaquetarProtocolo(paux);
 		empaquetarEthernet(paux,eaux);
-		int nodo=gestionarNodo(i,info,eaux.MACO,paux.ttl,(char *)paux.data);
-		info.contBroadcast[nodo]++;
+		//int nodo=gestionarNodo(i,info,eaux.MACO,paux.ttl,(char *)paux.data);
+		//info.contBroadcast[nodo]++;
+		info.flag++;
 
 		if (paux.ttl>0)
 		{

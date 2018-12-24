@@ -28,8 +28,10 @@ redUp:
 	./virtualSocket ./tmp/p35 ./tmp/p36 &
 	./virtualSocket ./tmp/p37 ./tmp/p38 &
 	./virtualSocket ./tmp/p39 ./tmp/p40 &
+
 redDown:
 	pkill -f socat
+
 redStart:
 	./raspiRed Kali ./tmp/p1 > /dev/null &
 	./raspiRed Raspbian ./tmp/p7 ./tmp/p3 > /dev/null &
@@ -45,7 +47,6 @@ redStart:
 	./raspiRed Raspberry ./tmp/p30 ./tmp/p33 > /dev/null &
 	./raspiRed Camila ./tmp/p40 ./tmp/p37 > /dev/null &
 	./raspiRed Jose ./tmp/p32 ./tmp/p35 ./tmp/p38 > /dev/null &
-	./raspiRed Nico ./tmp/p36 ./tmp/p34 
-	
+	./raspiRed Nico ./tmp/p36 ./tmp/p34
 redStop:
 	pkill -f raspiRed

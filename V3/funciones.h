@@ -27,7 +27,7 @@ void agregarNombre(int nodo,char *nombre,Matrices & info);
 void agregarMac(int nodo,BYTE *macOrigen,Matrices & info);
 void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info);
 char * NombreDeMac(Matrices & info,BYTE * MAC);
-void limpiarTTL(int nodo,Matrices & info);
+void limpiarTTL(int nodo,int puertos,Matrices & info);
 void limpiarTTLs(Matrices & info);
 // Ruteo
 int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info);

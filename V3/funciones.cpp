@@ -178,6 +178,10 @@ int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethe
         else{
             desempaquetarProtocolo(p);
             //printf("%d\n", p.cmd);fflush(stdout);
+            if (checkMac(e.MACO,macNodo))
+            {
+                return 0;//si el nodo encuentra su mac lo saca de circulación para evitar inundación
+            }
             if (p.cmd==0 && checkMac(e.MACD,macBroad))
             {
                 return -3;//Es broadcast;
@@ -225,9 +229,8 @@ bool checkMac(BYTE *mac,BYTE *macusr){
     return strncmp((char *)mac,(char *)macusr,6)==0;//true si las macs son iguales  
 }
 int existeMac( Matrices & info,BYTE *mac){//verifica en que espacio exite la MAC
-	for(int i=0;i<9;i++){
+	for(int i=0;i<NODOS;i++){
     if(checkMac(info.mac[i],mac))//Busca la coincidencia de una MAC
-        //printf("%x\n",*info.mac[i]);
         return i;
 	}
 	return -1;
@@ -248,8 +251,8 @@ los nodos para agregar nuevos*/
         }
 }
 
-void limpiarTTL(int nodo,Matrices & info){//elimina los TTL's existentes de un nodo
-            for(int j=0;j<4;j++){
+void limpiarTTL(int nodo,int puertos,Matrices & info){//elimina los TTL's existentes de un nodo
+            for(int j=0;j<puertos;j++){
                 info.ttl[nodo][j]=-1;
             }
 }
@@ -262,7 +265,8 @@ int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nom
         agregarMac(info.flag,macOrigen,info);
         agregarNombre(info.flag,nombre,info);
         actualizarTTL(info.flag,puerto,TTL,info);
-        return info.flag;
+        info.flag++;
+        return info.flag-1;
     }
     else{
         actualizarTTL(aux,puerto,TTL,info);
@@ -273,11 +277,8 @@ int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuari
     BYTE MAC[6]={0,0,0,0,0,0};
     return existeMac(info,MAC);
 }
-
 void agregarNombre(int nodo,char *nombre,Matrices & info){
-    for (int i = 0; i < 10; ++i)
-        info.nombres[nodo][i]=nombre[i];
-    //strcpy(info.nombres[nodo],nombre);   
+ strcpy(info.nombres[nodo],nombre);   
 }
 void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info){
     info.ttl[nodo][puerto]=TTL;
@@ -292,13 +293,14 @@ int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     que el nodo de destino de desconecte esta función devolvera -1*/
     int aux=-1;
     int puerto=-1;
-    if (nodo != -1){
-	    for (int i = 0; i < cantPuertos; ++i){
-		if ( info.ttl[nodo][i] > aux ){
-		    aux=info.ttl[nodo][i]; 
-		    puerto=i;
-		}
-	    }
+    if (nodo != -1)
+    for (int i = 0; i < cantPuertos; ++i)
+    {
+        if ( info.ttl[nodo][i] > aux )
+        {
+            aux=info.ttl[nodo][i]; 
+            puerto=i;
+        }
     }
     return puerto;
 }
