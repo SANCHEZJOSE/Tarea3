@@ -5,14 +5,14 @@
 #include "funciones.h"
 
 #define BYTE unsigned char
-#define TIME_OUT 200
+#define TIME_OUT 100
 
 BYTE macNodo[6];
 BYTE macBROAD[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 Ethernet eBroad;
 Protocolo pBroad;
 
-int contProcesosAuto=0,reinicio=16;/*Contador de procesos automaticos 
+int contProcesosAuto=0,reinicio=50;/*Contador de procesos automaticos 
 y número máximo para reiniciar contadores de Broadcast*/
 int ttl=8;
 ///variables para navegacion en el menú
@@ -24,7 +24,7 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 
 int main(int argc, char* argv[]){
 	Matrices InfoRed;
-	char namePort[11];//arreglo con identificadores de los puertos
+	//char namePort[11];//arreglo con identificadores de los puertos
 	int numPort = argc-2;//numero de puertos
 	getMacUsr(macNodo,argv[1]);//obtención de la mac del nodo a travez del nombre
 	strcpy((char *)eBroad.MACO,(char *)macNodo);//configuraciones para paquete broadcast
@@ -35,22 +35,14 @@ int main(int argc, char* argv[]){
 	empaquetarEthernet(pBroad,eBroad);
 	int fn[numPort];
 	for(int i=0;i<numPort;i++){
-   		strcpy(namePort,argv[i+2]);
-		fn[i] = openPort(namePort,B38400);
+   		//strcpy(namePort,argv[i+2]);
+		fn[i] = openPort(argv[i+2],B38400);
 	}
 	printf("Bienvenido usuaria(o) %s a la RaspiRed :\n--Presione Enter si desea enviar un mensaje.",argv[1]);
-	/*
-	printf("\n");
-	for (int i = 0; i < 15; ++i){
-		for (int j = 0; j < 4; j++)
-			printf("|\t%d\t|",InfoRed.ttl[i][j]);
-		printf("\n");
-	}
-	*/
+	fflush(stdout);
 	while(true){
-		procesoUsr(fn,numPort,InfoRed);
-		procesoAut(fn,numPort,InfoRed,argv[1],macNodo);
-		
+	procesoUsr(fn,numPort,InfoRed);
+	procesoAut(fn,numPort,InfoRed,argv[1],macNodo);
 	}
 	return 0;
 }
@@ -63,40 +55,44 @@ void procesoUsr(int *fn,int numPorts, Matrices& matriz){
 	if(opcion1==0)
 		opcion1=readPort(in,opcion,1,TIME_OUT);//si dentro del time out no ingresa opcion el sistema vuelve a esperar
 	if(opcion1>0){
-		if (opcion2==0){
+		if (opcion2==0)
+		{
 			if(mostrarlista){//permite mostrar lista una vez
 				fflush(stdin);
-				printf("--A quien Desea Enviar un Mensaje?:\n");fflush(stdout);
+				printf("--A quien Desea Enviar un Mensaje?:\n");
 				//Imprime lista de nombres
-				for (int i=0;i<15;i++){
+				for (int i=0;i<NODOS;i++){
 					if( EstadoNodo(i,numPorts,matriz)){
-						printf("%d.-\t",i+1);
-						for (int j = 0; j < 10 ; j ++ )
-							printf("%c",matriz.nombres[i][j]);
-						printf("\n");
+						printf("%d.-\t%s\n",i+1,matriz.nombres[i]);fflush(stdout);
 					}
 				}
 				printf( "Ingrese Opcion:\t");fflush(stdout);
 				mostrarlista=false;
 			}
-			opcion2=readPort(in,opcion,2,TIME_OUT);//
+			opcion2=readPort(in,opcion,3,TIME_OUT);//
 			fflush(stdin);
 			opcion[opcion2-1]='\0';
 		}
-		if (opcion2>0){	
-			if (opcion3==0){
+		if (opcion2>0)
+		{	
+
+			if (opcion3==0)
+			{
 				int numero = atoi((char*)opcion)-1;//transforma el string a numero -1
 				memset(opcion, 0 , sizeof(BYTE)*3);
-				if ((numero<15 && numero>-1) && EstadoNodo(numero,numPorts,matriz)){
+				if ((numero<15 && numero>-1) && EstadoNodo(numero,numPorts,matriz))
+				{
 					fflush(stdin);
-					if (mostrarpeticion){
+					if (mostrarpeticion)
+					{
 						printf("Ingrese Mensaje: ");fflush(stdout);
 						mostrarpeticion=false;//permite motrar esto una vez
 					}
 					opcion3=readPort(in,mensaje,126,TIME_OUT);
 					fflush(stdin);
-					if (opcion3>0){
-						paquete.cmd=0;
+					if (opcion3>0)
+					{
+						paquete.cmd=1;
 						paquete.ttl=ttl;
 						mensaje[opcion3-1]='\0';
 						int puerto=mejorPuertoDestino(numero,numPorts,matriz);//se selecciona el mejor puerto
@@ -111,6 +107,7 @@ void procesoUsr(int *fn,int numPorts, Matrices& matriz){
 						mostrarpeticion=true;
 						mostrarlista=true;
 						printf("--Presione Enter si desea enviar un mensaje.\n");fflush(stdout);
+
 					}
 				}
 				else{
@@ -121,6 +118,7 @@ void procesoUsr(int *fn,int numPorts, Matrices& matriz){
 					mostrarpeticion=true;
 				}	
 			}
+
 		}
 	}
 }
@@ -129,12 +127,12 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 	BYTE mensaje[126];
 	Ethernet eaux;
 	Protocolo paux;
-	for (int i = 0; i < numPort; ++i){
+	for (int i = 0; i < numPort; ++i)
+	{
 		enviar(fn[i],(BYTE *)Nombre,strlen(Nombre),eBroad,pBroad);
 	}
 	for(int i=0;i<numPort;i++){
 		switch(tamMensaje=recibe(fn[i],i,mensaje,macNodo,TIME_OUT,eaux,paux)) {
-			printf("tamMensaje: %d\n",tamMensaje);
 		case 0://timeout
 		break;
 		case -1:{//Error
@@ -197,6 +195,7 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 				info.contBroadcast[x]=0;//reinicia el contador de Broadcast de cada nodo
 			}
 		}
+		contProcesosAuto=0;
 
 	}
 }
