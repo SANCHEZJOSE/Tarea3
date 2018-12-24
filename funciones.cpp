@@ -20,23 +20,26 @@ int fcs(BYTE *x, int n){
     return c;
 }
 
-int fcs(BYTE x){
+int fcs(BYTE x) {
     int c = 0;
-    for (int i = 0 ; i < 8 ; i++){
-        if ( (x >> i) & 0x01 )
+    for (int i = 0 ; i < 8 ; i++) {
+        if ( (x >> i) & 0x01 ) {
             c++;
+        }
     }
     return c;
 }
+
 void empaquetarProtocolo(Protocolo &p){
     if (p.Long > 0) {
         //3 bits CMD	+	4 bits ttl	+	1 bit long
         p.frame[0] = (p.cmd & 0x07) | ((p.ttl&0x0F)<<3) | ((p.Long &0x01)<<7);
         //6 bits Long	+	2 bits Data
         p.frame[1] = ((p.Long&0XFE)>>1 | ((p.data[0] & 0x03) << 6));
-        for ( int i = 0 ; i < p.Long - 1; i++ ) 
+        for ( int i = 0 ; i < p.Long - 1; i++ ) {
             //6 bits        +       2 bits
             p.frame[2 + i] = ((p.data[i] & 0xFC) >> 2) | ((p.data[i + 1] & 0x03) << 6);
+        }   
         p.frame[p.Long + 1] = ((p.data[p.Long - 1] & 0xFC) >> 2);
         p.fcs = fcs(p.frame,p.Long + 2);
         //calcular checksum
@@ -57,13 +60,13 @@ bool desempaquetarProtocolo(Protocolo &p){
     p.Long = ((p.frame[0] & 0x80)>>7) | ((p.frame[1] & 0x3F) << 1);//7 bits long
     p.fcs = fcs(p.frame, p.Long + 1) + fcs((p.frame[p.Long + 1] & 0x3F));
     if ( p.fcs ==(int)((p.frame[p.Long + 1] >>6) | ((p.frame[p.Long + 2]) <<2))) {
-        printf("entre\n");
         //checksum obtenido vs checksum desempaquetado
         if (p.Long > 0){
             p.data[0] = (p.frame[1] >> 6) | ((p.frame[2] & 0x3F) << 2);
             //obtención de la data desde el frame
-            for (int i = 0 ; i < p.Long; i++)
+            for (int i = 0 ; i < p.Long; i++) {
                 p.data[i + 1] = (p.frame[i + 2] >> 6) | ((p.frame[i + 3] & 0x3F) << 2);
+            }
         }
     return true; //si checksum es correcto
     }
@@ -78,11 +81,11 @@ int empaquetarEthernet(Protocolo &p,Ethernet &e){
     }
     e.frameEth[12] = e.Long & 0xFF;
     e.frameEth[13] = (e.Long & 0xFF00)>>8;
-        for(int i=0;i<e.Long;i++)
-            e.frameEth[14+i]=p.frame[i];
+      for(int i=0;i<e.Long;i++)
+        e.frameEth[14+i]=p.frame[i];
     e.fcs = fcs(e.frameEth,14+e.Long);//tamaños de (macs+long+frame)
-        for(int i=0;i<4;i++)
-            e.frameEth[14+e.Long+i] = (e.fcs &(0xFF<<8*i)) >> 8*i;
+     for(int i=0;i<4;i++)
+    e.frameEth[14+e.Long+i] = (e.fcs &(0xFF<<8*i)) >> 8*i;
 return (14+e.Long+4);//tamaños de (macs+long+frame+fcs)
 }
 
@@ -95,11 +98,12 @@ bool desempaquetarEthernet(Protocolo &p,Ethernet &e){
         e.fcs = e.fcs + (e.frameEth[14+e.Long+i] << (8*i));//desempaquetado de fcs ethernet
     if(FCS == e.fcs){//detección de error por checksum
         for (int i = 0; i <6; ++i){
-            e.MACD[i]=e.frameEth[i];//mac destino
-            e.MACO[i]=e.frameEth[i+6];//mac origen
+        e.MACD[i]=e.frameEth[i];//mac destino
+        e.MACO[i]=e.frameEth[i+6];//mac origen
         }
-        for (int i = 0; i <e.Long; ++i)
+        for (int i = 0; i <e.Long; ++i){
             p.frame[i]=e.frameEth[14+i];
+        }
         return true;//Comprobación de error FCS correcta (en Ethernet)
     }else{
         return false;//Comprobación de error FCS invalida (en Ethernet)
@@ -119,12 +123,14 @@ void writeSlip(int fn,Ethernet& ether){
                 writePort(fn,&ether.frameEth[i],1);
     }
     writePort(fn,(&END),1);//Caracter de termino
+
 }
 
 int readSlip(int fn,Ethernet& ether,int timeout_msec){
-        int i=0;
+        int i=0, n;
         BYTE c;
-        if(1==readPort(fn,&c,1,timeout_msec) && c==END){
+        n=readPort(fn,&c,1,timeout_msec);
+        if((0!=n) || (c==END)){
         do {
             readPort(fn,&c,1,timeout_msec);
             if(c==ESC) {
@@ -152,7 +158,7 @@ void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p){
 }
 
 int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethernet &e,Protocolo &p){
-    BYTE macBroad[]={0xFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+    BYTE macBroad[6]={0xFF,0XFF,0XFF,0XFF,0XFF,0XFF};
     int size=readSlip(fn,e,timeout_msec);
     if (size>0){
     if (desempaquetarEthernet(p,e)){//Revision del FCS(Ethernet)
@@ -168,6 +174,7 @@ int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethe
         }
         else{
             desempaquetarProtocolo(p);
+            //printf("%d\n", p.cmd);fflush(stdout);
             if (p.cmd==0 && checkMac(e.MACD,macBroad))
             {
                 return -3;//Es broadcast;
@@ -193,7 +200,7 @@ void getMacUsr(BYTE* mac,char *Nusr){//obtiene la MAC del nodo
     FILE * arch = fopen(dir,"r");//busca en la carpeta con el mismo nombre del nodo
     fseek(arch,0,SEEK_SET);
     fscanf(arch,"%s",macAux);
-    printf("%s\n",macAux);
+    printf("La mac de usuario es %s\n",macAux);
     for(int i=0;i<6;i++){//ya que son 6 BYTE
         for(int j=0;j<2;j++){//ya que son dos cuaternas
             char aux=macAux[i*3+j];
@@ -208,7 +215,6 @@ void getMacUsr(BYTE* mac,char *Nusr){//obtiene la MAC del nodo
                 mac[i] = cuaterna<<4;
             if(j==1)
                 mac[i]=mac[i] | cuaterna;
-            printf("%x\n",mac[i]);
         }
     }
 }
@@ -216,8 +222,9 @@ bool checkMac(BYTE *mac,BYTE *macusr){
     return strncmp((char *)mac,(char *)macusr,6)==0;//true si las macs son iguales  
 }
 int existeMac( Matrices & info,BYTE *mac){//verifica en que espacio exite la MAC
-	for(int i=0;i<9;i++){
+	for(int i=0;i<15;i++){
     if(checkMac(info.mac[i],mac))//Busca la coincidencia de una MAC
+        //printf("%x\n",*info.mac[i]);
         return i;
 	}
 	return -1;
@@ -232,14 +239,16 @@ char * NombreDeMac(Matrices & info,BYTE * MAC){// Retorna el nombre de usuario s
 void limpiarTTLs(Matrices & info){/*elimina los TTL's existentes de todos 
 los nodos para agregar nuevos*/
         for(int i=0;i<NODOS;i++){
-            for(int j=0;j<4;j++)
+            for(int j=0;j<4;j++){
                 info.ttl[i][j]=-1;
+            }
         }
 }
 
 void limpiarTTL(int nodo,Matrices & info){//elimina los TTL's existentes de un nodo
-    for(int j=0;j<4;j++)
-            info.ttl[nodo][j]=-1;
+            for(int j=0;j<4;j++){
+                info.ttl[nodo][j]=-1;
+            }
 }
 int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nombre){
     /*Esta función se encarga de agregar información de un nodo a las matrices
@@ -250,7 +259,6 @@ int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nom
         agregarMac(info.flag,macOrigen,info);
         agregarNombre(info.flag,nombre,info);
         actualizarTTL(info.flag,puerto,TTL,info);
-        info.flag++;
         return info.flag;
     }
     else{
@@ -263,13 +271,17 @@ int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuari
     return existeMac(info,MAC);
 }
 void agregarNombre(int nodo,char *nombre,Matrices & info){
- strcpy(info.nombres[nodo],nombre);   
+	for (int i = 0; i < 10; ++i)
+		info.nombres[nodo][i]=nombre[i];
+	//strcpy(info.nombres[nodo],nombre);   
 }
 void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info){
     info.ttl[nodo][puerto]=TTL;
 }
 void agregarMac(int nodo,BYTE *macOrigen,Matrices & info){
- strcpy((char *)info.mac[nodo],(char*)macOrigen);  
+	for (int i = 0; i < 6; i++)
+		info.mac[nodo][i]=macOrigen[i];
+	//strcpy((char *)info.mac[nodo],(char*)macOrigen);  
 }
 int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     /* Esta función devuelve el puerto con mayor TTL en caso de 
@@ -287,22 +299,24 @@ int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     }
     return puerto;
 }
-bool EstadoNodo(int nodo, Matrices & info){
-    if(info.ttl[nodo][0]==-1){
-        if(info.ttl[nodo][1]==-1){
-            if(info.ttl[nodo][2]==-1){
-                if(info.ttl[nodo][3]==-1)
-                    return false;
-            }
-        }
+bool EstadoNodo(int nodo,int puertos ,Matrices & info){
+/*Esta función permite conocer si el nodo se encuentra disponible en la Red*/
+    for (int i = 0; i < puertos; ++i)
+    {
+        if(info.ttl[nodo][i]!=-1)
+                return true;
     }
-    return true;
+    return false;
 }
-/*
-BYTE NodosActivos(Matrices& info){
-    int c=0;
-    for (int i = 0; i < 8; i++)
-        c+=EstadoNodo(i,info);
-    return 
-}
-*/
+
+
+
+
+
+
+
+
+
+
+
+

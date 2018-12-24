@@ -9,7 +9,7 @@ struct Protocolo{
 	int ttl;//4 bits -->max 15 nodos
 	unsigned char data[TAM];//126 --> 126 caracteres maximo
 	int fcs;//10 bits -->1023 bits
-	unsigned char frame[TAM+3];//130
+	unsigned char frame[TAM+3];//129
 };
 struct Ethernet{
 	unsigned char MACD[6];

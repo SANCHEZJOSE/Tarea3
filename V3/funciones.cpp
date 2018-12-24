@@ -101,6 +101,7 @@ bool desempaquetarEthernet(Protocolo &p,Ethernet &e){
         {
         e.MACD[i]=e.frameEth[i];//mac destino
         e.MACO[i]=e.frameEth[i+6];//mac origen
+        
         }
         for (int i = 0; i <e.Long; ++i)
         {
@@ -160,7 +161,7 @@ void enviar(int fn,BYTE *mensaje, int largo, Ethernet &e,Protocolo &p){
 }
 
 int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethernet &e,Protocolo &p){
-    BYTE macBroad[]={0xFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+    BYTE macBroad[6]={0xFF,0XFF,0XFF,0XFF,0XFF,0XFF};
     int size=readSlip(fn,e,timeout_msec);
     if (size>0){
     if (desempaquetarEthernet(p,e)){//Revision del FCS(Ethernet)
@@ -176,6 +177,7 @@ int recibe(int fn,int puerto,BYTE * mensaje,BYTE * macNodo,int timeout_msec,Ethe
         }
         else{
             desempaquetarProtocolo(p);
+            //printf("%d\n", p.cmd);fflush(stdout);
             if (p.cmd==0 && checkMac(e.MACD,macBroad))
             {
                 return -3;//Es broadcast;
@@ -201,7 +203,7 @@ void getMacUsr(BYTE* mac,char *Nusr){//obtiene la MAC del nodo
     FILE * arch = fopen(dir,"r");//busca en la carpeta con el mismo nombre del nodo
     fseek(arch,0,SEEK_SET);
     fscanf(arch,"%s",macAux);
-    printf("La mac de usuario es :%s\n",macAux);
+    printf("La mac de usuario es %s\n",macAux);
     for(int i=0;i<6;i++){//ya que son 6 BYTE
         for(int j=0;j<2;j++){//ya que son dos cuaternas
             char aux=macAux[i*3+j];
@@ -225,6 +227,7 @@ bool checkMac(BYTE *mac,BYTE *macusr){
 int existeMac( Matrices & info,BYTE *mac){//verifica en que espacio exite la MAC
 	for(int i=0;i<9;i++){
     if(checkMac(info.mac[i],mac))//Busca la coincidencia de una MAC
+        //printf("%x\n",*info.mac[i]);
         return i;
 	}
 	return -1;
@@ -259,7 +262,6 @@ int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nom
         agregarMac(info.flag,macOrigen,info);
         agregarNombre(info.flag,nombre,info);
         actualizarTTL(info.flag,puerto,TTL,info);
-        info.flag++;
         return info.flag;
     }
     else{
@@ -271,14 +273,19 @@ int buscarEspacioNodo(Matrices & info){//busca un espacio para agregar un usuari
     BYTE MAC[6]={0,0,0,0,0,0};
     return existeMac(info,MAC);
 }
+
 void agregarNombre(int nodo,char *nombre,Matrices & info){
- strcpy(info.nombres[nodo],nombre);   
+    for (int i = 0; i < 10; ++i)
+        info.nombres[nodo][i]=nombre[i];
+    //strcpy(info.nombres[nodo],nombre);   
 }
 void actualizarTTL(int nodo,int puerto,int TTL,Matrices & info){
     info.ttl[nodo][puerto]=TTL;
 }
 void agregarMac(int nodo,BYTE *macOrigen,Matrices & info){
- strcpy((char *)info.mac[nodo],(char*)macOrigen);  
+    for (int i = 0; i < 6; i++)
+        info.mac[nodo][i]=macOrigen[i];
+    //strcpy((char )info.mac[nodo],(char)macOrigen);  
 }
 int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     /* Esta función devuelve el puerto con mayor TTL en caso de 
