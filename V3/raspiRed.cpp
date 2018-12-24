@@ -5,14 +5,13 @@
 #include "funciones.h"
 
 #define BYTE unsigned char
-#define TIME_OUT 100
+#define TIME_OUT 10
 
 BYTE macNodo[6];
 BYTE macBROAD[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
-Ethernet eBroad;
-Protocolo pBroad;
 
-int contProcesosAuto=0,reinicio=50;/*Contador de procesos automaticos 
+
+int contProcesosAuto=0,reinicio=60;/*Contador de procesos automaticos 
 y número máximo para reiniciar contadores de Broadcast*/
 int ttl=8;
 ///variables para navegacion en el menú
@@ -20,25 +19,21 @@ int opcion1=0,opcion2=0,opcion3=0;
 bool mostrarlista=true,mostrarpeticion=true;
 
 void procesoUsr(int *fn,int numPorts, Matrices& matriz);
-void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo);
+void procesoAut(int *,int , Matrices & ,char*,BYTE *);
+
 
 int main(int argc, char* argv[]){
+
 	Matrices InfoRed;
 	//char namePort[11];//arreglo con identificadores de los puertos
 	int numPort = argc-2;//numero de puertos
 	getMacUsr(macNodo,argv[1]);//obtención de la mac del nodo a travez del nombre
-	strcpy((char *)eBroad.MACO,(char *)macNodo);//configuraciones para paquete broadcast
-	strcpy((char *)eBroad.MACD,(char *)macBROAD);
-	pBroad.cmd=1;
-	pBroad.ttl=ttl;
-	empaquetarProtocolo(pBroad);
-	empaquetarEthernet(pBroad,eBroad);
 	int fn[numPort];
 	for(int i=0;i<numPort;i++){
    		//strcpy(namePort,argv[i+2]);
 		fn[i] = openPort(argv[i+2],B38400);
 	}
-	printf("Bienvenido usuaria(o) %s a la RaspiRed :\n--Presione Enter si desea enviar un mensaje.",argv[1]);
+	printf("Bienvenid@ usuari@ %s a la RaspiRed :\n--Presione Enter si desea enviar un mensaje.\n",argv[1]);
 	fflush(stdout);
 	while(true){
 	procesoUsr(fn,numPort,InfoRed);
@@ -127,12 +122,30 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 	BYTE mensaje[126];
 	Ethernet eaux;
 	Protocolo paux;
+	Ethernet eBroad;
+	Protocolo pBroad;
+	for (int m = 0; m < 6; ++m)
+	{
+		eBroad.MACO[m]=macNodo[m];
+		eBroad.MACD[m]=macBROAD[m];
+	}
+	pBroad.cmd=0;
+	pBroad.ttl=ttl;
+	pBroad.Long=strlen(Nombre);
+	strcpy((char*)pBroad.data,Nombre);
+	empaquetarProtocolo(pBroad);
+	empaquetarEthernet(pBroad,eBroad);
+
+
 	for (int i = 0; i < numPort; ++i)
 	{
-		enviar(fn[i],(BYTE *)Nombre,strlen(Nombre),eBroad,pBroad);
+
+		writeSlip(fn[i],eBroad);
+
 	}
 	for(int i=0;i<numPort;i++){
-		switch(tamMensaje=recibe(fn[i],i,mensaje,macNodo,TIME_OUT,eaux,paux)) {
+		tamMensaje=recibe(fn[i],i,mensaje,macNodo,TIME_OUT,eaux,paux);
+		switch(tamMensaje) {
 		case 0://timeout
 		break;
 		case -1:{//Error
@@ -156,9 +169,10 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 		case -3:{//Es broadcast
 		paux.ttl--;//Se disminuye el ttl en 1
 		//se vuelve a empaquetar para actualizar TTL
+		paux.data[paux.Long]='\0';
 		empaquetarProtocolo(paux);
 		empaquetarEthernet(paux,eaux);
-		int nodo=gestionarNodo(i,info,eaux.MACO,paux.ttl,(char *)paux.frame);
+		int nodo=gestionarNodo(i,info,eaux.MACO,paux.ttl,(char *)paux.data);
 		info.contBroadcast[nodo]++;
 		if (paux.ttl>0)
 		{
@@ -178,8 +192,8 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 		printf("|%s|\n",(char *)mensaje);fflush(stdout);
 		break;
 		}
-		memset(eaux.frameEth, 0 , sizeof(BYTE)*strlen((char*)eaux.frameEth));//limpia los frames
-		memset(paux.frame, 0 , sizeof(BYTE)*strlen((char*)paux.frame));
+		memset(eaux.frameEth, 0 , sizeof(BYTE)*129);//limpia los frames
+		memset(paux.frame, 0 , sizeof(BYTE)*148);
 	}
 
 	contProcesosAuto++;
