@@ -264,12 +264,18 @@ int gestionarNodo(int puerto,Matrices & info,BYTE * macOrigen,int TTL,char * nom
         //n=buscarEspacioNodo(info);
         agregarMac(info.flag,macOrigen,info);
         agregarNombre(info.flag,nombre,info);
-        actualizarTTL(info.flag,puerto,TTL,info);
+        if (TTL>info.ttl[info.flag][puerto])
+        {
+            actualizarTTL(info.flag,puerto,TTL,info);
+        }
         info.flag++;
         return info.flag-1;
     }
     else{
-        actualizarTTL(aux,puerto,TTL,info);
+        if (TTL>info.ttl[aux][puerto])
+        {
+            actualizarTTL(aux,puerto,TTL,info);
+        }
         return aux; 
     }
 }   
