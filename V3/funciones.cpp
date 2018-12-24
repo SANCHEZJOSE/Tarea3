@@ -292,14 +292,13 @@ int mejorPuertoDestino(int nodo,int cantPuertos,Matrices & info){
     que el nodo de destino de desconecte esta función devolvera -1*/
     int aux=-1;
     int puerto=-1;
-    if (nodo != -1)
-    for (int i = 0; i < cantPuertos; ++i)
-    {
-        if ( info.ttl[nodo][i] > aux )
-        {
-            aux=info.ttl[nodo][i]; 
-            puerto=i;
-        }
+    if (nodo != -1){
+	    for (int i = 0; i < cantPuertos; ++i){
+		if ( info.ttl[nodo][i] > aux ){
+		    aux=info.ttl[nodo][i]; 
+		    puerto=i;
+		}
+	    }
     }
     return puerto;
 }
