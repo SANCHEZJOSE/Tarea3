@@ -5,13 +5,13 @@
 #include "funciones.h"
 
 #define BYTE unsigned char
-#define TIME_OUT 1
+#define TIME_OUT 10
 
 BYTE macNodo[6];
 BYTE macBROAD[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 
-int contProcesosAuto=0,reinicio=1000;/*Contador de procesos automaticos 
+int contProcesosAuto=0,reinicio=600;/*Contador de procesos automaticos 
 y número máximo para reiniciar contadores de Broadcast*/
 int ttl=8;
 ///variables para navegacion en el menú
@@ -147,7 +147,7 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 	BYTE mensaje[126];
 	Ethernet eaux;
 	Protocolo paux;
-	if (contProcesosAuto==100)/*solo cuando el contador de proceso 
+	if (contProcesosAuto==10)/*solo cuando el contador de proceso 
 	es 30 se envia un broadcast(evita inundacion)*/
 	{
 		Ethernet eBroad;
