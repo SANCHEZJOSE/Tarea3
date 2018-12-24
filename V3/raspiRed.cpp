@@ -5,13 +5,13 @@
 #include "funciones.h"
 
 #define BYTE unsigned char
-#define TIME_OUT 10
+#define TIME_OUT 1
 
 BYTE macNodo[6];
 BYTE macBROAD[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 
-int contProcesosAuto=0,reinicio=10000;/*Contador de procesos automaticos 
+int contProcesosAuto=0,reinicio=1000;/*Contador de procesos automaticos 
 y número máximo para reiniciar contadores de Broadcast*/
 int ttl=8;
 ///variables para navegacion en el menú
@@ -38,25 +38,25 @@ int main(int argc, char* argv[]){
 	while(true){
 	procesoUsr(fn,numPort,InfoRed);
 	procesoAut(fn,numPort,InfoRed,argv[1],macNodo);
-for (int i = 0; i < 15; ++i){
-		for (int j = 0; j <4; j++)
-			printf("|\t%d\t|",InfoRed.ttl[i][j]);
-		printf("\n");
-	}
-	printf("\n");
-	for (int i = 0; i <15 ; ++i){
-		for (int j = 0; j < 6 ; j++)
-			printf("|\t%x\t|",InfoRed.mac[i][j]);
-		printf("\n");
-	}
-	printf("\n");
-	for (int i = 0; i <15 ; ++i){
-		printf("|");
-		for (int j = 0; j < 10 ; j++)
-			printf("%c",InfoRed.nombres[i][j]);
-		printf("|");
-		printf("\n");
-	}
+// for (int i = 0; i < 15; ++i){
+// 		for (int j = 0; j <4; j++)
+// 			printf("|\t%d\t|",InfoRed.ttl[i][j]);
+// 		printf("\n");
+// 	}
+// 	printf("\n");
+// 	for (int i = 0; i <15 ; ++i){
+// 		for (int j = 0; j < 6 ; j++)
+// 			printf("|\t%x\t|",InfoRed.mac[i][j]);
+// 		printf("\n");
+// 	}
+// 	printf("\n");
+// 	for (int i = 0; i <15 ; ++i){
+// 		printf("|");
+// 		for (int j = 0; j < 10 ; j++)
+// 			printf("%c",InfoRed.nombres[i][j]);
+// 		printf("|");
+// 		printf("\n");
+// 	}
 	}
 	return 0;
 }
@@ -147,7 +147,8 @@ void procesoAut(int *fn,int numPort, Matrices & info,char* Nombre,BYTE *macNodo)
 	BYTE mensaje[126];
 	Ethernet eaux;
 	Protocolo paux;
-	if (contProcesosAuto==20)//solo cuando el contador de proceso es 0(evita inundacion)
+	if (contProcesosAuto==100)/*solo cuando el contador de proceso 
+	es 30 se envia un broadcast(evita inundacion)*/
 	{
 		Ethernet eBroad;
 		Protocolo pBroad;
