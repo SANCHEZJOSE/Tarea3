@@ -28,7 +28,7 @@ redUp:
 	./virtualSocket ./tmp/p35 ./tmp/p36 &
 	./virtualSocket ./tmp/p37 ./tmp/p38 &
 	./virtualSocket ./tmp/p39 ./tmp/p40 &
-
+	clean
 redDown:
 	pkill -f socat
 
