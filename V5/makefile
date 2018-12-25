@@ -30,5 +30,16 @@ redStart:
 	./raspiRed Debian ./tmp/p10 ./tmp/p14 ./tmp/p17 ./tmp/p15 > /dev/null &
 	./raspiRed OpenSuse ./tmp/p12 ./tmp/p16 ./tmp/p19 > /dev/null &
 	./raspiRed Puppy ./tmp/p18 ./tmp/p20
+redTest:
+	./raspiRed Raspbian ./tmp/p7 ./tmp/p3 > /dev/null &
+	./raspiRed Ubuntu ./tmp/p2 ./tmp/p4 ./tmp/p5 ./tmp/p9 > /dev/null &
+	./raspiRed Fedora ./tmp/p6 ./tmp/p11 > /dev/null &
+	./raspiRed Mint ./tmp/p8 ./tmp/p13 > /dev/null &
+	./raspiRed Debian ./tmp/p10 ./tmp/p14 ./tmp/p17 ./tmp/p15 > /dev/null &
+	./raspiRed OpenSuse ./tmp/p12 ./tmp/p16 ./tmp/p19 > /dev/null &
+redNodo1:
+	./raspiRed Kali ./tmp/p1
+redNodo2:
+	./raspiRed Puppy ./tmp/p18 ./tmp/p20
 redStop:
 	pkill -f raspiRed
